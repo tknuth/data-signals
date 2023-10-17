@@ -30,22 +30,22 @@ def test_coverage_last_nd_md():
     today = "2023-08-31"
 
     # until one day before last 30 days
-    ra = pd.date_range("2021-01-01", "2023-08-01", freq="1D")
+    rng_a = pd.date_range("2021-01-01", "2023-08-01", freq="1D")
 
     # last 30 days
-    rb = pd.date_range("2023-08-02", today, freq="1D")
+    rng_b = pd.date_range("2023-08-02", today, freq="1D")
 
     # complete range
-    rc = pd.date_range("2021-01-01", today, freq="1D")
+    rng_c = pd.date_range("2021-01-01", today, freq="1D")
 
-    da = tst.set_random_na(iris, ratio=0.7, seed=42)
-    db = tst.set_random_na(iris, ratio=0.9, seed=42)
+    rna_a = tst.set_random_na(iris, ratio=0.7, seed=42)
+    rna_b = tst.set_random_na(iris, ratio=0.9, seed=42)
 
-    df = tst.sample_over_time(da, ra, seed=42)
-    dg = tst.sample_over_time(db, rb, seed=42)
+    da = tst.sample_over_time(rna_a, rng_a, seed=42)
+    db = tst.sample_over_time(rna_b, rng_b, seed=42)
 
-    df = pd.concat([df, dg])
-    df.index = rc
+    df = pd.concat([da, db])
+    df.index = rng_c
 
     pd.testing.assert_series_equal(
         agg.coverage(sel.last_60d_30d(df, today=today)),
