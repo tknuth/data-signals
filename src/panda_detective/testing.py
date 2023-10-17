@@ -16,6 +16,7 @@ def set_random_na(df, ratio=0.9, exclude=None, seed=None):
 
 
 def sample_over_time(df, date_range, seed=None):
-    df = df.sample(len(date_range), replace=True, random_state=seed).reset_index(drop=True)
+    df = df.sample(len(date_range), replace=True, random_state=seed)
+    df = df.reset_index(drop=True)
     df.index = date_range
     return df
