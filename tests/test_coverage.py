@@ -1,11 +1,20 @@
-from panda_detective import aggregations as agg, selections as sel, testing as tst
-from datetime import date
-import numpy as np
 import pandas as pd
 import seaborn as sns
-import random
+
+from panda_detective import aggregations as agg
+from panda_detective import selections as sel
+from panda_detective import testing as tst
 
 iris = sns.load_dataset("iris")
+
+
+def test_count_na_notna():
+    df = tst.random_na(iris, seed=42)
+
+    df1 = df.groupby("species").agg(agg.count_notna_na)
+    df2 = df.groupby("species").agg(agg.coverage)
+
+    pd.testing.assert_frame_equal(df1.applymap(lambda x: x[0] / (x[0] + x[1])), df2)
 
 
 def test_coverage():
