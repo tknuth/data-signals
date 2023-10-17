@@ -11,7 +11,7 @@ iris = sns.load_dataset("iris")
 def test_coverage():
     random.seed(42)
     pd.testing.assert_series_equal(
-        agg.coverage(tst.set_random_na(iris, seed=42)),
+        agg.coverage(tst.random_na(iris, seed=42)),
         pd.Series(
             {
                 "sepal_length": 0.88,
@@ -29,33 +29,24 @@ def test_coverage():
 def test_coverage_last_nd_md():
     today = "2023-08-31"
 
-    # until one day before last 30 days
-    rng_a = pd.date_range("2021-01-01", "2023-08-01", freq="1D")
+    date_range = pd.date_range("2023-06-01", today, freq="1D")
+    n = len(date_range)
 
-    # last 30 days
-    rng_b = pd.date_range("2023-08-02", today, freq="1D")
+    df1 = tst.random_na(iris.iloc[0 : n - 30], ratio=0.7, seed=42)
+    df2 = tst.random_na(iris.iloc[n - 30 : n], ratio=0.9, seed=42)
 
-    # complete range
-    rng_c = pd.date_range("2021-01-01", today, freq="1D")
-
-    rna_a = tst.set_random_na(iris, ratio=0.7, seed=42)
-    rna_b = tst.set_random_na(iris, ratio=0.9, seed=42)
-
-    df_a = tst.sample_over_time(rna_a, rng_a, seed=42)
-    df_b = tst.sample_over_time(rna_b, rng_b, seed=42)
-
-    df = pd.concat([df_a, df_b])
-    df.index = rng_c
+    df = pd.concat([df1, df2])
+    df.index = date_range
 
     pd.testing.assert_series_equal(
         agg.coverage(sel.last_60d_30d(df, today=today)),
         pd.Series(
             {
-                "sepal_length": 0.63,
+                "sepal_length": 0.53,
                 "sepal_width": 0.73,
-                "petal_length": 0.70,
-                "petal_width": 0.87,
-                "species": 0.77,
+                "petal_length": 0.80,
+                "petal_width": 0.77,
+                "species": 0.63,
             }
         ),
         rtol=0,
@@ -66,11 +57,11 @@ def test_coverage_last_nd_md():
         agg.coverage(sel.last_30d(df, today=today)),
         pd.Series(
             {
-                "sepal_length": 0.93,
+                "sepal_length": 0.97,
                 "sepal_width": 0.87,
-                "petal_length": 0.97,
-                "petal_width": 0.93,
-                "species": 0.93,
+                "petal_length": 0.93,
+                "petal_width": 0.83,
+                "species": 0.87,
             }
         ),
         rtol=0,
