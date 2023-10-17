@@ -9,7 +9,6 @@ iris = sns.load_dataset("iris")
 
 
 def test_coverage():
-    random.seed(42)
     pd.testing.assert_series_equal(
         agg.coverage(tst.random_na(iris, seed=42)),
         pd.Series(
