@@ -41,10 +41,10 @@ def test_coverage_last_nd_md():
     rna_a = tst.set_random_na(iris, ratio=0.7, seed=42)
     rna_b = tst.set_random_na(iris, ratio=0.9, seed=42)
 
-    da = tst.sample_over_time(rna_a, rng_a, seed=42)
-    db = tst.sample_over_time(rna_b, rng_b, seed=42)
+    df_a = tst.sample_over_time(rna_a, rng_a, seed=42)
+    df_b = tst.sample_over_time(rna_b, rng_b, seed=42)
 
-    df = pd.concat([da, db])
+    df = pd.concat([df_a, df_b])
     df.index = rng_c
 
     pd.testing.assert_series_equal(
