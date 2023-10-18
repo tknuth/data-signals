@@ -14,9 +14,9 @@ def last_nd_md(df, n, m, col=None, today=None):
         series = df[col]
 
     last_nd = today - pd.to_timedelta(timedelta(days=n))
-    last_nd_md = today - pd.to_timedelta(timedelta(days=m))
+    last_md = today - pd.to_timedelta(timedelta(days=m))
 
-    return df[(series >= last_nd) & (series < last_nd_md)]
+    return df[(series >= last_nd) & (series < last_md)]
 
 
 def last_60d_30d(df, col=None, today=None):
