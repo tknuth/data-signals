@@ -15,7 +15,7 @@ def skipna(func):
 
     return wrapper
 
-
+# idea: trigger interesting signals/alerts, i.e. not only "failed expectations"
 class Expectation:
     def __str__(self):
         return f"<{self.name}>"
