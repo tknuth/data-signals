@@ -26,6 +26,10 @@ def test_expectations():
         # .evaluate(format="string")
     )
 
+    # should also be possible to do this:
+    # expectations.select(...).range(...)
+    # expectations.select(...).range(...)
+
     print()
     # print(df)
     print(rs)
