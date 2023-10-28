@@ -68,7 +68,7 @@ class ValuesExpectation(Expectation):
         }
 
 
-class RangeExpectation(Expectation):
+class RangeExpectation(Expectation): # ColumnExpectation
     def __init__(self, column: str, range: list[Optional[float], Optional[float]]):
         self.column = column
         self.range = range
@@ -118,6 +118,15 @@ class Expectations:
             self.expectations.append(ValuesExpectation(column, allowed_values))
         return self
 
+    # def dispersion(self, z):
+    #     ZExpectation(column, values, z) # values list is used for fitting the expectation model
+
+
+    # def custom(self, custom_expectation):
+    #     custom_expectation() # column is None here because it applies to the whole row
+        
+        
+
     def _create_empty_series(self):
         index_tuples = []
 
@@ -142,7 +151,7 @@ class Expectations:
             for expectation in self.expectations:
                 idx = i, expectation.type, expectation.column
                 value = self.df[expectation.column].loc[i]
-                results.append([idx, expectation.to_format(format, value)])
+                results.append([idx, expectation.to_format(format, value)]) # for dealing with RowExpectations, test class inheritance
 
         results = list(zip(*results))
         s = pd.Series(results[1], index=pd.MultiIndex.from_tuples(results[0]))
