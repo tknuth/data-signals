@@ -1,4 +1,4 @@
-from panda_detective.core2 import *
+from panda_detective.collection import *
 import numpy as np
 import pandas as pd
 from toolz import curried as tz
