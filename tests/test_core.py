@@ -19,10 +19,10 @@ def test_signals():
         SignalCollection(df)
         .select("age")
         .range([20, 50])
-        .notnan()
+        .notna()
         .select("height")
         .range([180, 190])
-        .notnan()
+        .notna()
     )
 
     print()

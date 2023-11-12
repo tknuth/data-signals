@@ -8,7 +8,7 @@ from ..checks import ColumnCheck, ScalarCheck
 from .base import Signal, series_wrapper
 
 
-class NotNaNSignal(Signal):
+class NotNASignal(Signal):
     @series_wrapper
     def active(self, series: pd.Series) -> pd.Series:
         return series.isna()

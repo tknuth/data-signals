@@ -3,7 +3,7 @@ from dataclasses import dataclass
 import pandas as pd
 
 from .signals.range import RangeSignal
-from .signals.notnan import NotNaNSignal
+from .signals.notna import NotNASignal
 from .signals.base import Signal
 
 
@@ -33,8 +33,8 @@ class SignalCollection:
     def range(self, range_):
         return self.register(RangeSignal, range_)
 
-    def notnan(self):
-        return self.register(NotNaNSignal)
+    def notna(self):
+        return self.register(NotNASignal)
 
     def evaluate(self, df: pd.DataFrame, axis=0):
         if axis == 0:
