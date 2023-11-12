@@ -18,7 +18,7 @@ class NotNASignal(Signal):
         if not self.active(value):
             return None
         description = f"""Value is NaN."""
-        return ScalarCheck(description, self)
+        return ScalarCheck(description, value, self)
 
     def check_column(self, series: pd.Series) -> ColumnCheck:
         ratio = self.active(series).mean()

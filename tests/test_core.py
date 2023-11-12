@@ -25,5 +25,5 @@ def test_signals():
     )
 
     print()
-    print(sc.evaluate(df, axis=0))
-    print(sc.evaluate(df, axis=1))
+    print(sc.evaluate(df, True))
+    print(sc.evaluate(df))

@@ -13,6 +13,7 @@ class RangeSignal(Signal):
         self.range = range
         self.min = range[0] or math.inf * -1
         self.max = range[1] or math.inf
+        self.config = f"[{self.min}, {self.max}]"
 
     @series_wrapper
     def active(self, series: pd.Series) -> pd.Series:
@@ -26,7 +27,7 @@ class RangeSignal(Signal):
             f"""Value {value:.0f} is outside """
             f"""allowed range [{self.min}, {self.max}]."""
         )
-        return ScalarCheck(description, self)
+        return ScalarCheck(description, value, self)
 
     def check_column(self, series: pd.Series) -> ColumnCheck:
         ratio = self.active(series).mean()

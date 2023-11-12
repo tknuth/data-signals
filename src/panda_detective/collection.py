@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 import pandas as pd
+import numpy as np
 
 from .signals.range import RangeSignal
 from .signals.notna import NotNASignal
@@ -11,6 +12,22 @@ from .signals.base import Signal
 class Mapping:
     column: str
     signal: Signal
+
+
+def add_config_column(df: pd.DataFrame) -> pd.DataFrame:
+    return df.assign(config=lambda df: df.check.apply(lambda d: d.signal.config))
+
+
+def add_value_column(df: pd.DataFrame) -> pd.DataFrame:
+    return df.assign(value=lambda df: df.check.apply(lambda d: d.value))
+
+
+def add_ratio_column(df: pd.DataFrame) -> pd.DataFrame:
+    return df.assign(ratio=lambda df: df.check.apply(lambda d: d.ratio))
+
+
+def replace_none_with_nan(df: pd.DataFrame) -> pd.DataFrame:
+    return df.replace({None: np.nan})
 
 
 class SignalCollection:
@@ -36,12 +53,10 @@ class SignalCollection:
     def notna(self):
         return self.register(NotNASignal)
 
-    def evaluate(self, df: pd.DataFrame, axis=0):
-        if axis == 0:
+    def evaluate(self, df: pd.DataFrame, aggregate=False):
+        if aggregate:
             return self._evaluate_columns(df)
-        if axis == 1:
-            return self._evaluate_rows(df)
-        raise ValueError(f"Invalid axis {axis}.")
+        return self._evaluate_cells(df)
 
     def _evaluate_columns(self, df: pd.DataFrame):
         # TODO: check overlapping signals (same type, same column)
@@ -56,14 +71,17 @@ class SignalCollection:
             index_tuples, names=["column", "signal"]
         )
 
-        df = pd.DataFrame(
-            {"check": data},
-            index=multi_index,
-        ).assign(ratio=lambda df: df.check.apply(lambda d: d.ratio))
+        return (
+            pd.DataFrame(
+                {"check": data},
+                index=multi_index,
+            )
+            .pipe(add_config_column)
+            .pipe(add_ratio_column)
+            .pipe(replace_none_with_nan)
+        )
 
-        return df
-
-    def _evaluate_rows(self, df: pd.DataFrame):
+    def _evaluate_cells(self, df: pd.DataFrame):
         # TODO: check overlapping signals (same type, same column)
         index_tuples = []
         data = []
@@ -79,7 +97,12 @@ class SignalCollection:
             index_tuples, names=["row", "column", "signal"]
         )
 
-        return pd.Series(
-            data,
-            index=multi_index,
+        return (
+            pd.DataFrame(
+                {"check": data},
+                index=multi_index,
+            )
+            .pipe(add_config_column)
+            .pipe(add_value_column)
+            .pipe(replace_none_with_nan)
         )

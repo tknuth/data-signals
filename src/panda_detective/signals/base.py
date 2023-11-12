@@ -18,6 +18,9 @@ def series_wrapper(func):
 
 @dataclass
 class Signal:
+    def __init__(self):
+        self.config = None
+
     def __str__(self):
         return f"<{self.name}>"
 

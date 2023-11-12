@@ -6,9 +6,10 @@ def format_text(text):
 
 
 class ScalarCheck:
-    def __init__(self, description, signal):
+    def __init__(self, description, value, signal):
         self.description = format_text(description)
         self.signal = signal
+        self.value = value
 
     def __repr__(self):
         return f"<{self.__class__.__name__}>"
