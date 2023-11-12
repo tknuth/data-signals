@@ -9,6 +9,8 @@ import numpy as np
 
 
 def series_wrapper(func):
+    """If passed a scalar, wrap it in a series."""
+
     @functools.wraps(func)
     def wrapper(self, value):
         if isinstance(value, pd.Series):
@@ -31,20 +33,30 @@ class Signal:
     def name(self):
         return self.__class__.__name__
 
-    def to_dict(self, value: float | int | pd.Series):
-        is_series = isinstance(value, pd.Series)
-        return {
-            "active": self.active(value).any() if is_series else self.active(value),
-            "value": value.mean() if is_series else value,
-            "message": self.message(value),
-        } | {k: self.__getattribute__(k) for k in self.__annotations__}
-
 
 @dataclass
 class Mapping:
-    # assign an expectation to a column
     column: str
     signal: Signal
+
+
+class ValueSummary:
+    def __init__(self, text, signal):
+        self.text = format_text(text)
+        self.signal = signal
+
+    def __repr__(self):
+        return f"<{self.__class__.__name__}>"
+
+
+class ColumnSummary:
+    def __init__(self, text, ratio, signal):
+        self.text = format_text(text)
+        self.signal = signal
+        self.ratio = ratio
+
+    def __repr__(self):
+        return f"<{self.__class__.__name__}>"
 
 
 @dataclass
@@ -52,45 +64,51 @@ class RangeSignal(Signal):
     range: list[Optional[float], Optional[float]]
 
     @property
-    def min(self):
+    def min(self) -> float | int:
         return self.range[0] or math.inf * -1
 
     @property
-    def max(self):
+    def max(self) -> float | int:
         return self.range[1] or math.inf
 
     @series_wrapper
-    def active(self, series: pd.Series):
+    def active(self, series: pd.Series) -> pd.Series:
         return ~series.between(self.min, self.max)
 
-    def _from_scalar(self, scalar: float | int):
-        if not self.active(scalar):
+    def summarize_value(self, value: float | int) -> ValueSummary | None:
+        # value is a scalar
+        if not self.active(value) or np.isnan(value):
             return None
-        return format_text(
-            f"""
-            Value {scalar:.0f} is outside
-            allowed range [{self.min}, {self.max}].
-                """
+        text = (
+            f"""Value {value:.0f} is outside """
+            f"""allowed range [{self.min}, {self.max}]."""
         )
+        return ValueSummary(text, self)
 
-    def _from_series(self, series: pd.Series):
+    def summarize_column(self, series: pd.Series) -> ColumnSummary:
         ratio = self.active(series).mean()
-        return format_text(
-            f"""
-                {ratio*100:.0f}% of values are outside
-                allowed range [{self.min}, {self.max}].
-                """
+        text = (
+            # f"""In column '{series.name}', """
+            f"""{ratio*100:.0f}% of values are outside """
+            f"""allowed range [{self.min}, {self.max}]."""
         )
-
-    def message(self, value: float | int | pd.Series):
-        if isinstance(value, pd.Series):
-            return self._from_series(value)
-        return self._from_scalar(value)
+        return ColumnSummary(text, ratio, self)
 
 
-class Signals:
+# def map_extract_text(ds: pd.DataFrame | pd.Series):
+#     if isinstance(ds, pd.DataFrame):
+#         series = ds.result
+#     return [v.text for v in series.to_list()]
+
+
+# def map_extract_ratio(df: pd.DataFrame):
+#     return df.ratio.to_list()
+
+
+class SignalCollection:
     def __init__(self, df):
         self.df: pd.DataFrame = df
+        # idea: only apply to current chain
         self.selected_columns: list[str] = []  # current selection
         self.mappings: list[Mapping] = []
 
@@ -99,22 +117,58 @@ class Signals:
         self.selected_columns = args
         return self
 
-    def register(self, expectation, *args, **kwargs):
+    def register(self, signal, *args, **kwargs):
         for column in self.selected_columns:
-            self.mappings.append(Mapping(column, expectation(*args, **kwargs)))
+            self.mappings.append(Mapping(column, signal(*args, **kwargs)))
         return self
 
     def range(self, range_):
         return self.register(RangeSignal, range_)
 
-    def evaluate_columns(self, df: pd.DataFrame):
-        # evaluate all columns
-        for mapping in self.mappings:
-            print(mapping.signal.to_dict(df[mapping.column]))
-        # wip
+    def evaluate(self, df: pd.DataFrame, axis=0):
+        if axis == 0:
+            return self._evaluate_columns(df)
+        if axis == 1:
+            return self._evaluate_rows(df)
+        raise ValueError(f"Invalid axis {axis}.")
 
-    def evaluate_row(self, series: pd.Series):
-        # evaluate row
+    def _evaluate_columns(self, df: pd.DataFrame):
+        # idea: check overlapping signals (same type, same column)
+        index_tuples = []
+        data = []
+
         for mapping in self.mappings:
-            print(mapping.signal.to_dict(series[mapping.column]))
-        # wip
+            index_tuples.append((mapping.column, mapping.signal.name))
+            data.append(mapping.signal.summarize_column(df[mapping.column]))
+
+        multi_index = pd.MultiIndex.from_tuples(
+            index_tuples, names=["column", "signal"]
+        )
+
+        df = pd.DataFrame(
+            {"result": data},
+            index=multi_index,
+        ).assign(ratio=lambda df: df.result.apply(lambda d: d.ratio))
+
+        return df
+
+    def _evaluate_rows(self, df: pd.DataFrame):
+        # idea: check overlapping signals (same type, same column)
+        index_tuples = []
+        data = []
+
+        for i, series in df.iterrows():
+            for mapping in self.mappings:
+                result = mapping.signal.summarize_value(series[mapping.column])
+                if result is not None:
+                    index_tuples.append((i, mapping.column, mapping.signal.name))
+                    data.append(result)
+
+        multi_index = pd.MultiIndex.from_tuples(
+            index_tuples, names=["row", "column", "signal"]
+        )
+
+        return pd.Series(
+            data,
+            index=multi_index,
+        )
