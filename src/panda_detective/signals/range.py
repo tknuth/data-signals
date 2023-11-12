@@ -4,7 +4,7 @@ from typing import Optional
 import numpy as np
 import pandas as pd
 
-from ..checks import ColumnCheck, ValueCheck
+from ..checks import ColumnCheck, ScalarCheck
 from .base import Signal, series_wrapper
 
 
@@ -18,7 +18,7 @@ class RangeSignal(Signal):
     def active(self, series: pd.Series) -> pd.Series:
         return ~series.between(self.min, self.max)
 
-    def check_value(self, value: float | int) -> ValueCheck | None:
+    def check_scalar(self, value: float | int) -> ScalarCheck | None:
         # value is a scalar
         if not self.active(value) or np.isnan(value):
             return None
@@ -26,7 +26,7 @@ class RangeSignal(Signal):
             f"""Value {value:.0f} is outside """
             f"""allowed range [{self.min}, {self.max}]."""
         )
-        return ValueCheck(description, self)
+        return ScalarCheck(description, self)
 
     def check_column(self, series: pd.Series) -> ColumnCheck:
         ratio = self.active(series).mean()

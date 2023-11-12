@@ -5,7 +5,7 @@ def format_text(text):
     return re.sub(" +", " ", text.replace("\n", "")).strip()
 
 
-class ValueCheck:
+class ScalarCheck:
     def __init__(self, description, signal):
         self.description = format_text(description)
         self.signal = signal

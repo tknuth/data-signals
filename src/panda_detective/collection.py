@@ -66,7 +66,7 @@ class SignalCollection:
 
         for i, series in df.iterrows():
             for mapping in self.mappings:
-                result = mapping.signal.check_value(series[mapping.column])
+                result = mapping.signal.check_scalar(series[mapping.column])
                 if result is not None:
                     index_tuples.append((i, mapping.column, mapping.signal.name))
                     data.append(result)
