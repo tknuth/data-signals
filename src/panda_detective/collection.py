@@ -3,6 +3,7 @@ from dataclasses import dataclass
 import pandas as pd
 
 from .signals.range import RangeSignal
+from .signals.notnan import NotNaNSignal
 from .signals.base import Signal
 
 
@@ -32,6 +33,9 @@ class SignalCollection:
     def range(self, range_):
         return self.register(RangeSignal, range_)
 
+    def notnan(self):
+        return self.register(NotNaNSignal)
+
     def evaluate(self, df: pd.DataFrame, axis=0):
         if axis == 0:
             return self._evaluate_columns(df)
@@ -53,9 +57,9 @@ class SignalCollection:
         )
 
         df = pd.DataFrame(
-            {"result": data},
+            {"check": data},
             index=multi_index,
-        ).assign(ratio=lambda df: df.result.apply(lambda d: d.ratio))
+        ).assign(ratio=lambda df: df.check.apply(lambda d: d.ratio))
 
         return df
 
@@ -66,10 +70,10 @@ class SignalCollection:
 
         for i, series in df.iterrows():
             for mapping in self.mappings:
-                result = mapping.signal.check_scalar(series[mapping.column])
-                if result is not None:
+                check = mapping.signal.check_scalar(series[mapping.column])
+                if check is not None:
                     index_tuples.append((i, mapping.column, mapping.signal.name))
-                    data.append(result)
+                    data.append(check)
 
         multi_index = pd.MultiIndex.from_tuples(
             index_tuples, names=["row", "column", "signal"]

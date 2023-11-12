@@ -23,4 +23,4 @@ class Signal:
 
     @property
     def name(self):
-        return self.__class__.__name__
+        return self.__class__.__name__.replace("Signal", "").lower()

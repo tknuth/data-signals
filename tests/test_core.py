@@ -19,29 +19,12 @@ def test_signals():
         SignalCollection(df)
         .select("age")
         .range([20, 50])
+        .notnan()
         .select("height")
         .range([180, 190])
+        .notnan()
     )
 
-    tz.pipe(
-        sc.evaluate(df, axis=0),
-    )
-    #     )
-    #     rs = (
-    #         Expectations(df)
-    #         .select("age")
-    #         .range((18, 40))
-    #         .select("height")
-    #         .range((180, 190))
-    #         .select("gender")
-    #         .values(["M", "F"])
-    #         .evaluate()
-    #         # .evaluate(format="string")
-    #     )
-
-    #     # should also be possible to do this:
-    #     # expectations.select(...).range(...)
-    #     # expectations.select(...).range(...)
-
-    #     print()
-    #     print(rs)
+    print()
+    print(sc.evaluate(df, axis=0))
+    print(sc.evaluate(df, axis=1))
