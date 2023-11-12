@@ -40,18 +40,18 @@ class Mapping:
     signal: Signal
 
 
-class ValueSummary:
-    def __init__(self, text, signal):
-        self.text = format_text(text)
+class ValueCheck:
+    def __init__(self, description, signal):
+        self.description = format_text(description)
         self.signal = signal
 
     def __repr__(self):
         return f"<{self.__class__.__name__}>"
 
 
-class ColumnSummary:
-    def __init__(self, text, ratio, signal):
-        self.text = format_text(text)
+class ColumnCheck:
+    def __init__(self, description, ratio, signal):
+        self.description = format_text(description)
         self.signal = signal
         self.ratio = ratio
 
@@ -75,34 +75,23 @@ class RangeSignal(Signal):
     def active(self, series: pd.Series) -> pd.Series:
         return ~series.between(self.min, self.max)
 
-    def summarize_value(self, value: float | int) -> ValueSummary | None:
+    def check_value(self, value: float | int) -> ValueCheck | None:
         # value is a scalar
         if not self.active(value) or np.isnan(value):
             return None
-        text = (
+        description = (
             f"""Value {value:.0f} is outside """
             f"""allowed range [{self.min}, {self.max}]."""
         )
-        return ValueSummary(text, self)
+        return ValueCheck(description, self)
 
-    def summarize_column(self, series: pd.Series) -> ColumnSummary:
+    def check_column(self, series: pd.Series) -> ColumnCheck:
         ratio = self.active(series).mean()
-        text = (
-            # f"""In column '{series.name}', """
+        description = (
             f"""{ratio*100:.0f}% of values are outside """
             f"""allowed range [{self.min}, {self.max}]."""
         )
-        return ColumnSummary(text, ratio, self)
-
-
-# def map_extract_text(ds: pd.DataFrame | pd.Series):
-#     if isinstance(ds, pd.DataFrame):
-#         series = ds.result
-#     return [v.text for v in series.to_list()]
-
-
-# def map_extract_ratio(df: pd.DataFrame):
-#     return df.ratio.to_list()
+        return ColumnCheck(description, ratio, self)
 
 
 class SignalCollection:
@@ -139,7 +128,7 @@ class SignalCollection:
 
         for mapping in self.mappings:
             index_tuples.append((mapping.column, mapping.signal.name))
-            data.append(mapping.signal.summarize_column(df[mapping.column]))
+            data.append(mapping.signal.check_column(df[mapping.column]))
 
         multi_index = pd.MultiIndex.from_tuples(
             index_tuples, names=["column", "signal"]
@@ -159,7 +148,7 @@ class SignalCollection:
 
         for i, series in df.iterrows():
             for mapping in self.mappings:
-                result = mapping.signal.summarize_value(series[mapping.column])
+                result = mapping.signal.check_value(series[mapping.column])
                 if result is not None:
                     index_tuples.append((i, mapping.column, mapping.signal.name))
                     data.append(result)
