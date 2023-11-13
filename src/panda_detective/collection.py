@@ -49,17 +49,17 @@ class SignalCollection:
 
     def evaluate(self, df: pd.DataFrame, aggregate=False):
         if aggregate:
-            return self._evaluate_columns(df)
-        return self._evaluate_cells(df)
+            return self._check_columns(df)
+        return self._check_rows(df)
 
-    def _evaluate_columns(self, df: pd.DataFrame):
+    def _check_columns(self, df: pd.DataFrame):
         # TODO: check overlapping signals (same type, same column)
         index_tuples = []
         data = []
 
         for signal in self.signals:
             index_tuples.append((signal.column, signal.name))
-            data.append(signal.check_column(df[signal.column]))
+            data.append(signal.check_column(df))
 
         multi_index = pd.MultiIndex.from_tuples(
             index_tuples, names=["column", "signal"]
@@ -75,7 +75,7 @@ class SignalCollection:
             .pipe(replace_none_with_nan)
         )
 
-    def _evaluate_cells(self, df: pd.DataFrame):
+    def _check_rows(self, df: pd.DataFrame):
         # TODO: check overlapping signals (same type, same column)
         index_tuples = []
         data = []

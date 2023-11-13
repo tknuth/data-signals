@@ -30,8 +30,8 @@ class RangeSignal(Signal):
         )
         return ScalarCheck(description, value, self)
 
-    def check_column(self, series: pd.Series) -> ColumnCheck:
-        ratio = self.active(series).mean()
+    def check_column(self, df: pd.DataFrame) -> ColumnCheck:
+        ratio = self.active(df[self.column]).mean()
         description = (
             f"""{ratio*100:.0f}% of values are outside """
             f"""allowed range [{self.min}, {self.max}]."""
