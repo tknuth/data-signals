@@ -8,12 +8,6 @@ from .signals.notna import NotNASignal
 from .signals.base import Signal
 
 
-@dataclass
-class Mapping:
-    column: str
-    signal: Signal
-
-
 def add_config_column(df: pd.DataFrame) -> pd.DataFrame:
     return df.assign(config=lambda df: df.check.apply(lambda d: d.signal.config))
 
@@ -35,7 +29,7 @@ class SignalCollection:
         self.df: pd.DataFrame = df
         # TODO: only apply to current chain
         self.selected_columns: list[str] = []  # current selection
-        self.mappings: list[Mapping] = []
+        self.signals: list[Signal] = []
 
     def select(self, *args):
         # TODO: also accept functions
@@ -44,7 +38,7 @@ class SignalCollection:
 
     def register(self, signal, *args, **kwargs):
         for column in self.selected_columns:
-            self.mappings.append(Mapping(column, signal(column, *args, **kwargs)))
+            self.signals.append(signal(column, *args, **kwargs))
         return self
 
     def range(self, range_):
@@ -63,9 +57,9 @@ class SignalCollection:
         index_tuples = []
         data = []
 
-        for mapping in self.mappings:
-            index_tuples.append((mapping.column, mapping.signal.name))
-            data.append(mapping.signal.check_column(df[mapping.column]))
+        for signal in self.signals:
+            index_tuples.append((signal.column, signal.name))
+            data.append(signal.check_column(df[signal.column]))
 
         multi_index = pd.MultiIndex.from_tuples(
             index_tuples, names=["column", "signal"]
@@ -87,10 +81,10 @@ class SignalCollection:
         data = []
 
         for i, series in df.iterrows():
-            for mapping in self.mappings:
-                check = mapping.signal.check_scalar(series[mapping.column])
+            for signal in self.signals:
+                check = signal.check_scalar(series[signal.column])
                 if check is not None:
-                    index_tuples.append((i, mapping.column, mapping.signal.name))
+                    index_tuples.append((i, signal.column, signal.name))
                     data.append(check)
 
         multi_index = pd.MultiIndex.from_tuples(
