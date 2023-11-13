@@ -44,7 +44,7 @@ class SignalCollection:
 
     def register(self, signal, *args, **kwargs):
         for column in self.selected_columns:
-            self.mappings.append(Mapping(column, signal(*args, **kwargs)))
+            self.mappings.append(Mapping(column, signal(column, *args, **kwargs)))
         return self
 
     def range(self, range_):

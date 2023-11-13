@@ -1,4 +1,5 @@
 import functools
+from typing import Optional
 from dataclasses import dataclass
 
 import pandas as pd
@@ -16,10 +17,10 @@ def series_wrapper(func):
     return wrapper
 
 
-@dataclass
 class Signal:
-    def __init__(self):
-        self.config = None
+    def __init__(self, column: str, config: Optional[str] = None):
+        self.column = column
+        self.config = config
 
     def __str__(self):
         return f"<{self.name}>"

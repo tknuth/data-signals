@@ -9,7 +9,8 @@ from .base import Signal, series_wrapper
 
 
 class RangeSignal(Signal):
-    def __init__(self, range: list[Optional[float], Optional[float]]):
+    def __init__(self, column: str, range: list[Optional[float], Optional[float]]):
+        self.column = column
         self.range = range
         self.min = range[0] or math.inf * -1
         self.max = range[1] or math.inf
