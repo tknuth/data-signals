@@ -8,95 +8,55 @@ from .signals.notna import NotNASignal
 from .signals.base import Signal
 
 
-def add_config_column(df: pd.DataFrame) -> pd.DataFrame:
-    return df.assign(config=lambda df: df.check.apply(lambda d: d.signal.config))
-
-
-def add_value_column(df: pd.DataFrame) -> pd.DataFrame:
-    return df.assign(value=lambda df: df.check.apply(lambda d: d.value))
-
-
-def add_ratio_column(df: pd.DataFrame) -> pd.DataFrame:
-    return df.assign(ratio=lambda df: df.check.apply(lambda d: d.ratio))
-
-
-def replace_none_with_nan(df: pd.DataFrame) -> pd.DataFrame:
-    return df.replace({None: np.nan})
+def summarize(df: pd.DataFrame):
+    return (
+        df.groupby(["columns", "config", "type"])
+        .agg({"column": "first", "signal": "first", "active": "mean"})
+        .reset_index()
+        .rename(columns={"active": "ratio"})
+    )
 
 
 class SignalCollection:
     def __init__(self, df):
         self.df: pd.DataFrame = df
         # TODO: only apply to current chain
-        self.selected_columns: list[str] = []  # current selection
+        self.selection: list[str] = []
         self.signals: list[Signal] = []
 
     def select(self, *args):
         # TODO: also accept functions
-        self.selected_columns = args
-        return self
-
-    def register(self, signal, *args, **kwargs):
-        for column in self.selected_columns:
-            self.signals.append(signal(column, *args, **kwargs))
+        self.selection = args
         return self
 
     def range(self, range_):
-        return self.register(RangeSignal, range_)
+        return self._register(RangeSignal, range_)
 
     def notna(self):
-        return self.register(NotNASignal)
+        return self._register(NotNASignal)
 
-    def evaluate(self, df: pd.DataFrame, aggregate=False):
-        if aggregate:
-            return self._check_columns(df)
-        return self._check_rows(df)
-
-    def _check_columns(self, df: pd.DataFrame):
+    def evaluate(self, df: pd.DataFrame):
         # TODO: check overlapping signals (same type, same column)
-        index_tuples = []
-        data = []
+        results = []
 
         for signal in self.signals:
-            index_tuples.append((signal.column, signal.name))
-            data.append(signal.check_column(df))
-
-        multi_index = pd.MultiIndex.from_tuples(
-            index_tuples, names=["column", "signal"]
-        )
-
-        return (
-            pd.DataFrame(
-                {"check": data},
-                index=multi_index,
+            results.append(
+                pd.DataFrame(
+                    {
+                        "signal": signal,
+                        "columns": [frozenset(signal.columns)] * len(df),
+                        "column": signal.column if pd.notna(signal.column) else np.nan,
+                        "type": signal.type,
+                        "config": signal.config(),
+                        "value": signal.value(df).values,
+                        "active": signal.active(df).values,
+                    }
+                )
             )
-            .pipe(add_config_column)
-            .pipe(add_ratio_column)
-            .pipe(replace_none_with_nan)
-        )
 
-    def _check_rows(self, df: pd.DataFrame):
-        # TODO: check overlapping signals (same type, same column)
-        index_tuples = []
-        data = []
+        return pd.concat(results)
 
-        for i, series in df.iterrows():
-            for signal in self.signals:
-                check = signal.check_scalar(series[signal.column])
-                if check is not None:
-                    index_tuples.append((i, signal.column, signal.name))
-                    data.append(check)
-
-        multi_index = pd.MultiIndex.from_tuples(
-            index_tuples, names=["row", "column", "signal"]
-        )
-
-        return (
-            pd.DataFrame(
-                {"check": data},
-                index=multi_index,
-            )
-            .pipe(add_config_column)
-            .pipe(add_value_column)
-            .pipe(replace_none_with_nan)
-        )
+    def _register(self, signal, *args, **kwargs):
+        for column in self.selection:
+            self.signals.append(signal([column], *args, **kwargs))
+        return self

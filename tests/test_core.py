@@ -24,6 +24,6 @@ def test_signals():
         .notna()
     )
 
+    # dg.signal == "notna(age)"
     print()
-    print(sc.evaluate(df, True))
     print(sc.evaluate(df))

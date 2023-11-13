@@ -1,26 +1,19 @@
-import math
-from typing import Optional
-
 import numpy as np
 import pandas as pd
 
-from ..checks import ColumnCheck, ScalarCheck
-from .base import Signal, series_wrapper
+from .base import Signal
 
 
 class NotNASignal(Signal):
-    @series_wrapper
-    def active(self, series: pd.Series) -> pd.Series:
-        return series.isna()
+    def active(self, df: pd.DataFrame) -> pd.Series:
+        return df[self.column].isna()
 
-    def check_scalar(self, value: float | int) -> ScalarCheck | None:
-        # value is a scalar
-        if not self.active(value):
-            return None
-        description = f"""Value is NaN."""
-        return ScalarCheck(description, value, self)
+    def describe(self, active: pd.Series, df: pd.DataFrame) -> str:
+        assert len(active) == 1
+        if not active.iloc[0]:
+            return np.nan
+        return "Value is NaN."
 
-    def check_column(self, df: pd.DataFrame) -> ColumnCheck:
-        ratio = self.active(df[self.column]).mean()
-        description = f"""{ratio*100:.0f}% of values are NaN """
-        return ColumnCheck(description, ratio, self)
+    def summarize(self, active: pd.Series, df: pd.DataFrame) -> str:
+        ratio = active.mean()
+        return f"""{ratio*100:.0f}% of values are NaN """
