@@ -85,7 +85,6 @@ class SignalCollection:
             )
 
         return Evaluation(pd.concat(results))
-        # return pd.concat(results)
 
     def _register(self, signal, *args, **kwargs):
         if not self.selection:
