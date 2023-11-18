@@ -14,6 +14,8 @@ class Signal:
 
     @property
     def type(self):
+        if self.__class__.__name__ == "Signal":
+            return None
         return self.__class__.__name__.replace("Signal", "").lower()
 
     @property
@@ -26,6 +28,7 @@ class Signal:
         return df[self.column]
 
     def __eq__(self, other: str):
+        # allows filtering df by signal easily
         return self.type == other
 
     def __str__(self):
