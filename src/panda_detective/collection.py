@@ -60,7 +60,7 @@ class SignalCollection:
         return self._register(NotNASignal)
 
     def evaluate(self, df: pd.DataFrame):
-        # TODO: check overlapping signals (same type, same column)
+        # TODO: Check/reject overlapping signals (same type, same column)
         results = []
 
         for signal in self.signals:
