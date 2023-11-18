@@ -23,16 +23,10 @@ class RangeSignal(Signal):
     def active(self, df: pd.DataFrame) -> pd.Series:
         return ~df[self.column].between(self.min, self.max)
 
-    def describe(self, active: pd.Series, df: pd.DataFrame) -> pd.Series:
-        def func(s):
-            if s.active and pd.notna(s.value):
-                return f"{s.value:.0f} is outside {self.config}."
-            return np.nan
+    def describe(self, series: pd.Series) -> pd.Series:
+        if series.active and pd.notna(series.value):
+            return f"Value {series.value:.0f} is outside {self.config}."
 
-        return pd.DataFrame({"active": active, "value": df[self.column]}).apply(
-            func, axis=1
-        )
-
-    def summarize(self, active: pd.Series, df: pd.DataFrame) -> str:
-        ratio = active.mean()
+    def summarize(self, df: pd.DataFrame) -> str:
+        ratio = df.active.mean()
         return f"""{ratio*100:.0f}% of values are outside {self.config}"""
