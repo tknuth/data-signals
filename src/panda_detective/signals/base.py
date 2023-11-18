@@ -23,6 +23,15 @@ class Signal:
     def config(self):
         return None
 
+    def active(self, df: pd.DataFrame) -> pd.Series:
+        raise NotImplementedError
+
+    def describe(self):
+        raise NotImplementedError
+
+    def summarize(self):
+        raise NotImplementedError
+
     def value(self, df: pd.DataFrame) -> pd.Series:
         if len(self.columns) == 1:
             return df[self.column]
