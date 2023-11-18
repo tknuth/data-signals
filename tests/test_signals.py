@@ -42,6 +42,18 @@ def test_range():
             name="age",
         ),
     )
+    assert_series_equal(
+        signal.describe(signal.active(df), df),
+        pd.Series(
+            {
+                "a": np.nan,
+                "b": "32 is outside [18, 25].",
+                "c": np.nan,
+                "d": "47 is outside [18, 25].",
+                "e": np.nan,
+            }
+        ),
+    )
 
 
 def test_notna():
