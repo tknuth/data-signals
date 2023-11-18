@@ -16,6 +16,7 @@ class RangeSignal(Signal):
         self.min = range[0] or math.inf * -1
         self.max = range[1] or math.inf
 
+    @property
     def config(self):
         return f"[{self.min}, {self.max}]"
 

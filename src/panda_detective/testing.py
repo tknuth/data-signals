@@ -1,5 +1,18 @@
+import pandas as pd
 import numpy as np
 import random
+
+
+def load_people() -> pd.DataFrame:
+    return pd.DataFrame(
+        {
+            "name": ["Alice", "Bob", "Charlie", "David", "Mike"],
+            "gender": ["F", "M", np.nan, "M", "X"],
+            "age": [25, 32, 18, 47, np.nan],
+            "height": [175, 190, np.nan, 180, 190],
+        },
+        index=list("abcde"),
+    )
 
 
 def random_na(df, ratio=0.9, exclude=None, seed=None):

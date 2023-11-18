@@ -16,13 +16,14 @@ class Signal:
     def type(self):
         return self.__class__.__name__.replace("Signal", "").lower()
 
+    @property
+    def config(self):
+        return None
+
     def value(self, df: pd.DataFrame) -> pd.Series:
         if self.column is None:
             return pd.Series([None] * len(df))
         return df[self.column]
-
-    def config(self):
-        return None
 
     def __eq__(self, other: str):
         return self.type == other
