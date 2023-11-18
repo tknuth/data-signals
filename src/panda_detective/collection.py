@@ -35,7 +35,9 @@ class Evaluation:
                 }
             )
 
-        # TODO: This requires each signal to only depend on the type and columns, possibly use signal hash/key function to include config as well (None config must then be empty string for grouping)?
+        # TODO: This requires each signal to only depend on the type and columns,
+        # possibly use signal hash/key function to include config as well (Note that
+        # None config values must then be empty strings for grouping)?
         return self.df.groupby(["type", "columns"]).apply(func).reset_index(drop=True)
 
 
