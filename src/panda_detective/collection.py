@@ -9,21 +9,12 @@ from .signals.base import Signal
 from typing import Optional
 
 
-def summarize(df: pd.DataFrame):
-    return (
-        df.groupby(["columns", "config", "type"])
-        .agg({"column": "first", "signal": "first", "active": "mean"})
-        .reset_index()
-        .rename(columns={"active": "ratio"})
-    )
-
-
 class Evaluation:
     def __init__(self, df: pd.DataFrame):
         self.df = df
 
     def show(self):
-        df = self.df.query("active == True")
+        df = self.df.query("active == True").copy()
 
         df["description"] = df.apply(
             lambda series: series.signal.describe(series), axis=1
@@ -80,7 +71,8 @@ class SignalCollection:
                         "config": signal.config,
                         "value": signal.value(df).values,
                         "active": signal.active(df).values,
-                    }
+                    },
+                    index=df.index,
                 )
             )
 

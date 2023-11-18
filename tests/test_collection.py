@@ -10,11 +10,6 @@ def test_signals():
     sc.select("age").range([20, 50])
     sc.select("height").range([180, 190])
     sc.notna()
-    print()
-    print(sc.evaluate(df).show())
-    print(sc.evaluate(df).summarize())
-
-
-# dg.signal == "notna(age)"
-# print()
-# print(sc.evaluate(df))
+    # print()
+    # print(sc.evaluate(df).show())
+    # print(sc.evaluate(df).summarize())
