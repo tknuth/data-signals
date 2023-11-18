@@ -35,7 +35,8 @@ class Evaluation:
                 }
             )
 
-        return self.df.groupby(["signal", "columns"]).apply(func).reset_index(drop=True)
+        # TODO: This requires each signal to only depend on the type and columns
+        return self.df.groupby(["type", "columns"]).apply(func).reset_index(drop=True)
 
 
 class SignalCollection:
