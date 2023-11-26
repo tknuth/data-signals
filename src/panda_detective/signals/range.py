@@ -17,6 +17,8 @@ def ignore_na(func):
 
 
 class RangeSignal(Signal):
+    """Test whether values are within a range. Ignores non-numeric values."""
+
     def __init__(
         self, columns: list[str], range: list[Optional[float], Optional[float]]
     ):
@@ -31,7 +33,12 @@ class RangeSignal(Signal):
 
     @ignore_na
     def active(self, df: pd.DataFrame) -> pd.Series:
-        return ~df[self.column].between(self.min, self.max)
+        # create nan series with same index and name
+        series = pd.Series([np.nan] * len(df), index=df.index, name=self.column)
+        # mask numeric values
+        mask = df[self.column].apply(lambda x: isinstance(x, (int, float)))
+        series.loc[mask] = ~df.loc[mask, self.column].between(self.min, self.max)
+        return series
 
     def describe(self, series: pd.Series) -> pd.Series:
         if series.active:

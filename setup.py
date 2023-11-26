@@ -5,9 +5,9 @@ requires = ["pandas"]
 dev_requires = ["bump2version", "pytest", "pytest-sugar", "seaborn"]
 
 setup(
-    name="Panda Detective",
+    name="Data Signals",
     version="1.0.0",
-    description="Utilities for pandas dataframes",
+    description="Data signals offer a declarative approach to managing assumptions about data.",
     author="Tobias Knuth",
     packages=find_packages(where="src"),
     package_dir={"": "src"},

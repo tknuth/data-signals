@@ -5,7 +5,6 @@ import numpy as np
 
 from .signals.range import RangeSignal
 from .signals.notna import NotNASignal
-from .signals.base import Signal
 from typing import Optional
 
 
