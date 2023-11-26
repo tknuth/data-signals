@@ -21,6 +21,7 @@ def test_range():
                 "e": False,
             },
             name="age",
+            dtype="boolean",
         ),
     )
     result = SignalCollection(df, signals=[signal]).evaluate(df)
@@ -65,6 +66,7 @@ def test_non_numeric_value():
                 "e": False,
             },
             name="age",
+            dtype="boolean",
         ),
     )
     result = SignalCollection(df, signals=[signal]).evaluate(df)
