@@ -1,19 +1,12 @@
 import math
 from typing import Optional
-import functools
+
 import numpy as np
 import pandas as pd
 
+from panda_detective.core import ignore_na
+
 from .base import Signal
-
-
-def ignore_na(func):
-    @functools.wraps(func)
-    def wrapper(self, df):
-        active = func(self, df)
-        return active.mask(df[self.column].isna(), False)
-
-    return wrapper
 
 
 class RangeSignal(Signal):
@@ -28,9 +21,11 @@ class RangeSignal(Signal):
         self.max = range[1] or math.inf
 
     @property
-    def config(self):
+    def config(self) -> str:
         return f"[{self.min}, {self.max}]"
 
+    # due to ignore_na, NaN values are always False,
+    # even though explicitly created in the function
     @ignore_na
     def active(self, df: pd.DataFrame) -> pd.Series:
         # create nan series with same index and name
@@ -42,10 +37,10 @@ class RangeSignal(Signal):
         series.loc[mask] = ~df.loc[mask, self.column].between(self.min, self.max)
         return series
 
-    def describe(self, series: pd.Series) -> pd.Series:
+    def describe(self, series: pd.Series) -> pd.Series | None:
         if series.active:
             return f"Value {series.value:.0f} is outside {self.config}."
 
     def summarize(self, df: pd.DataFrame) -> str:
         ratio = df.active.mean()
-        return f"""{ratio*100:.0f}% of values are outside {self.config}"""
+        return f"""{ratio*100:.0f}% of values are outside {self.config}."""

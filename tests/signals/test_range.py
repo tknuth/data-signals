@@ -5,6 +5,8 @@ from pandas.testing import assert_series_equal, assert_frame_equal
 import numpy as np
 import pandas as pd
 
+# TODO: test with other data types (datetime)
+
 
 def test_range():
     df = load_people()
@@ -43,7 +45,7 @@ def test_range():
                 "type": ["range"],
                 "config": ["[18, 25]"],
                 "ratio": [0.4],
-                "description": ["40% of values are outside [18, 25]"],
+                "description": ["40% of values are outside [18, 25]."],
             }
         ),
     )
@@ -89,7 +91,7 @@ def test_non_numeric_value():
                 "type": ["range"],
                 "config": ["[18, 25]"],
                 "ratio": [0.5],
-                "description": ["50% of values are outside [18, 25]"],
+                "description": ["50% of values are outside [18, 25]."],
             }
         ),
     )

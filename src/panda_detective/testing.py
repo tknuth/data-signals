@@ -15,6 +15,15 @@ def load_people() -> pd.DataFrame:
     )
 
 
+def load_fruits() -> pd.DataFrame:
+    return pd.DataFrame(
+        {
+            "name": ["Apple", "Orange", "Pear", "Pineapple", "Kiwi", np.nan],
+            "weight": [80, 120, np.nan, 500, 50, 120],
+        },
+    )
+
+
 def random_na(df, ratio=0.9, exclude=None, seed=None):
     if seed is not None:
         random.seed(seed)
